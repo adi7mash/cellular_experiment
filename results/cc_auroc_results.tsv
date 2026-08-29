@@ -1,0 +1,39 @@
+method	n_compounds	threshold	auroc_mean	auroc_std	notes
+XGB_2000_d7	150	0.4	0.7244	0.0131	baseline XGBoost (from focused_optimization sweep)
+XGB_2000_d7	150	0.6	0.7384	0.0129	baseline XGBoost (from focused_optimization sweep)
+XGB_3000_d7_lr003	150	0.4	0.7230	0.0129	high-capacity XGBoost
+XGB_3000_d7_lr003	150	0.6	0.7383	0.0126	high-capacity XGBoost
+XGB_3000_d8_lr002	150	0.4	0.7225	0.0129	high-capacity XGBoost
+XGB_3000_d8_lr002	150	0.6	0.7364	0.0127	high-capacity XGBoost
+XGB_5000_d7_lr002	150	0.4	0.7229	0.0125	high-capacity XGBoost
+XGB_5000_d7_lr002	150	0.6	0.7388	0.0117	high-capacity XGBoost
+XGB_5000_d8_lr001	150	0.4	0.7206	0.0131	high-capacity XGBoost
+XGB_5000_d8_lr001	150	0.6	0.7348	0.0127	high-capacity XGBoost
+XGB_5000_d10_lr001	150	0.4	0.7239	0.0131	high-capacity XGBoost
+XGB_5000_d10_lr001	150	0.6	0.7364	0.0126	high-capacity XGBoost
+MLP_512_256_128	150	0.4	0.7326	0.0108	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_512_256_128	150	0.6	0.7596	0.0147	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_512_256_128_64	150	0.4	0.7326	0.0106	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_512_256_128_64	150	0.6	0.7574	0.0131	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_1024_512_256	150	0.4	0.7398	0.0113	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_1024_512_256	150	0.6	0.7591	0.0137	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_1024_512_256_128	150	0.4	0.7419	0.0104	PyTorch MLP, dropout=0.3, BatchNorm
+MLP_1024_512_256_128	150	0.6	0.7586	0.0134	PyTorch MLP, dropout=0.3, BatchNorm
+Regression_XGBReg	150	0.4	0.7249	0.0118	XGBoost regressor on continuous similarity, evaluated as AUROC
+Regression_XGBReg	150	0.6	0.7405	0.0156	XGBoost regressor on continuous similarity, evaluated as AUROC
+Ensemble_XGB+MLP	150	0.4	0.7489	0.0119	average of XGBoost + MLP out-of-fold predictions
+Ensemble_XGB+MLP	150	0.6	0.7653	0.0124	average of XGBoost + MLP out-of-fold predictions
+Ensemble_XGB+MLP+Reg	150	0.4	0.7517	0.0123	average of XGBoost + MLP + Regression out-of-fold predictions
+Ensemble_XGB+MLP+Reg	150	0.6	0.7746	0.0100	average of XGBoost + MLP + Regression out-of-fold predictions
+Stacked_MetaLearner	150	0.4	0.7483	0.0093	XGBoost meta-learner on base model predictions
+Stacked_MetaLearner	150	0.6	0.7654	0.0120	XGBoost meta-learner on base model predictions
+Seed_Ensemble_5x	150	0.4	0.7291	0.0123	5-seed XGBoost ensemble averaged
+Seed_Ensemble_5x	150	0.6	0.7406	0.0094	5-seed XGBoost ensemble averaged
+XGB_2000_d7	246	0.4	0.7099	0.0033	known=246 (comprehensive pipeline)
+XGB_2000_d7	246	0.6	0.7135	0.0076	known=246 (comprehensive pipeline)
+XGB_2000_d7	1674	0.4	0.6047	0.0013	all compounds (comprehensive pipeline)
+XGB_2000_d7	1674	0.6	0.6235	0.0014	all compounds (comprehensive pipeline)
+MLP_512_256_128	1674	0.4	0.6643	0.0009	all compounds (comprehensive pipeline)
+MLP_512_256_128	1674	0.6	0.6749	0.0016	all compounds (comprehensive pipeline)
+Beaini_Boltz2	246	0.4	0.7100	NA	Beaini et al. reported value
+Beaini_Boltz2	246	0.6	0.7600	NA	Beaini et al. reported value
