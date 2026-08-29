@@ -1,0 +1,22 @@
+=== RxRx3 Embedding Run: dark-snowball-245 ===
+Checkpoint: s3://output-model-checkpoints/checkpoints/final/e_cheese_five_epoch_dark-snowball-245.ckpt
+Start: 2026-08-29T17:47:32+00:00
+
+--- [1/4] Codebook molecule ---
+  Codebook molecule: 199s (03m19s)
+--- [2/4] Codebook protein ---
+  Codebook protein: 175s (02m55s)
+--- [3/4] Contrastive projection molecule ---
+  Projection molecule: 188s (03m08s)
+--- [4/4] Contrastive projection protein ---
+  Projection protein: 189s (03m09s)
+
+=== All 4 runs complete ===
+Total wall time: 751s (00h12m31s)
+End: 2026-08-29T18:00:03+00:00
+
+=== Output verification ===
+  rxrx3_pairs_molecule_codebook_dark-snowball-245: 3346 .pt files
+  rxrx3_pairs_molecule_molecule_mean_dark-snowball-245: 1673 .pt files
+  rxrx3_pairs_protein_codebook_dark-snowball-245: 1470 .pt files
+  rxrx3_pairs_protein_protein_mean_dark-snowball-245: 735 .pt files

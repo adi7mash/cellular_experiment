@@ -1,0 +1,5 @@
+*.npz
+*.parquet
+__pycache__/
+*.pyc
+/opt/
