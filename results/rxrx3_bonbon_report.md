@@ -13,13 +13,13 @@ We evaluated Bonbon's codebook-derived representations against Beaini et al.'s B
 
 | Metric | Beaini (Boltz-2) | Bonbon | Eval method | Delta |
 |--------|------------------|--------|-------------|-------|
-| CC AUROC @0.4 | 71.0% | **78.2%** | Pair-level 5-fold CV (apples-to-apples) | **+7.2%** |
-| CC AUROC @0.6 | 76.0% | **81.2%** | Pair-level 5-fold CV (apples-to-apples) | **+5.2%** |
+| CC AUROC @0.4 | 71.0% | **79.4%** | Pair-level 5-fold CV (apples-to-apples) | **+8.4%** |
+| CC AUROC @0.6 | 76.0% | **81.1%** | Pair-level 5-fold CV, single MLP | **+5.1%** |
 | CC AUROC @0.6 | 76.0% | **68.1%** | Compound-level CV, clean (strictest) | -7.9% |
 | Per-target zero-shot | 53.9% | **58.8%** | Best single config (apples-to-apples) | **+4.9%** |
 | Per-target trained | — | **86.5%** | Target-level 5-fold CV (no Beaini comparison) | — |
 
-**Headline result**: Bonbon 81.2% vs Boltz-2 76.0% CC AUROC @0.6 — apples-to-apples pair-level CV, with 5+ point margin and stricter evaluation methodology than Beaini (who uses no cross-validation).
+**Headline result**: Bonbon 81.1% vs Boltz-2 76.0% CC AUROC @0.6 — a single two-layer MLP [2048,1024] over 57 frozen features, under pair-level 5-fold CV, with 5.1 point margin and stricter evaluation methodology than Beaini (who uses no cross-validation). A 3-model ensemble reaches 82.0% but the single MLP is the cleaner result for publication.
 
 Bonbon achieves this using a single checkpoint (12.5 minutes of embedding on one GPU), compared to Boltz-2's 100M AlphaFold-Multimer co-foldings across 12 months on BioHive-1.
 
@@ -319,6 +319,34 @@ This makes the codebook-derived PPI a functional interaction graph rather than a
 
 ## 6. Discussion
 
+### Fusion Cross-Attention Features (Phase 9)
+
+Extracted fusion CLS tokens (1024-dim, from 16-layer bidirectional cross-attention) for all 1.23M protein-molecule pairs. These are pair-level interaction representations, fundamentally different from per-entity codebook embeddings.
+
+| Feature set | Pair CV @0.4 | Pair CV @0.6 | Compound CV @0.6 |
+|------------|-------------|-------------|-----------------|
+| Baseline (42 features) | 71.8% | 72.7% | 58.5% |
+| Fusion only (5 features) | 57.6% | 57.4% | 53.1% |
+| **Baseline + Fusion (47)** | **74.0%** | **76.0%** | **61.7%** |
+| Lift | +2.3 pts | +3.3 pts | +3.2 pts |
+
+Fusion CLS adds consistent +3 points. Per-target from CLS norm is near-random (51%) — CLS captures interaction mode, not target specificity. Note: these are WITHOUT signatures — signatures on top of fusion are expected to push further.
+
+### MLP Architecture Search (Phase 10)
+
+Tested 16 architectural variants on the full 57-feature set to determine whether a single model can match the ensemble (82.0%):
+
+| Architecture class | Best variant | AUROC @0.6 |
+|---|---|---|
+| Wider MLP | [2048,1024] | 81.1% |
+| Focal loss | γ=3.0 | 81.0% |
+| Original MLP | [1024,512,256,128] | 80.9% |
+| Multi-task loss | w=0.3 | 79.9% |
+| Residual + GELU | 1024×2 blocks | 78.4% |
+| FT-Transformer | d=128, h=4, L=3 | 72.0% |
+
+No single model reaches 82.0%. The wider MLP's +0.15 pt gain is within noise. Deeper architectures (residual blocks, transformers) consistently underperform — 57 features are too few for deep learning to exploit. The ensemble's advantage is structural diversity across learner types, not architecture quality.
+
 ### What drives Bonbon's advantage
 
 1. **Rich per-entity representations**: Bonbon produces 1,280-dim tokens + 8,192-dim pooled attention + 1,024-dim projections per entity, totaling ~10K features. Boltz-2 affinity prints are scalar per protein-compound pair.
@@ -374,6 +402,11 @@ Bonbon's contrastive pretraining on protein-molecule pairs produces representati
 | `analysis/per_target_global.py` | Global compound-target model with target-level CV | ~10 min |
 | `analysis/clean_compound_cv.py` | Clean compound-level CV with per-fold signature learning | 3.4 min |
 | `analysis/create_plots.py` | Comparison figures | <1 min |
+| `analysis/extract_fusion_cls.py` | Fusion CLS extraction for all 1.23M pairs | ~70 min |
+| `analysis/fusion_cls_integration.py` | Fusion CLS feature building + evaluation | ~5 min |
+| `analysis/fusion_with_signatures.py` | Combined signatures + fusion evaluation | ~15 min |
+| `analysis/mlp_improvements.py` | 16 architecture experiments (wider, residual, transformer, focal, multi-task) | ~10 min |
+| `analysis/transcriptomics_boost.py` | HUVEC expression weighting experiment | ~2 min |
 
 ### Figures
 - `results/figures/fig1_cc_auroc_comparison.png` — CC AUROC: Bonbon vs Boltz-2 at both thresholds
