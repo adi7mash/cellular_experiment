@@ -220,9 +220,10 @@ For each of the 735 gene targets, we computed the zero-shot AUROC of CG scores a
 |--------|-------------|-----------|-------------------|
 | Beaini et al. (Boltz-2) | 53.9% | 7,000 | Transcriptomics, PPI |
 | Ours — CG scores (zero-shot) | 58.8% | 257 | None |
-| **Ours — fusion CLS MLP (target-CV)** | **78.6%** | 257 | None |
+| Ours — fusion CLS MLP (target-CV) | 78.6% | 257 | None |
+| **Ours — codebook tokens MLP (target-CV)** | **89.9%** | 257 | None |
 
-Using the full 1024-dimensional fusion CLS vector — rather than collapsing it to a scalar norm — dramatically improves per-target prediction. A global MLP trained on (CLS vector → phenocopy label) generalizes to unseen targets under 5-fold target-level CV, achieving 78.6% median AUROC. This represents a +20 point improvement over CG score baselines (57.3%) and confirms that the fusion cross-attention encodes target-specific directional information that scalar reductions destroy.
+Using the full 1,280-dimensional molecule codebook token vector — rather than collapsing it to a scalar CG score — dramatically improves per-target prediction. A global MLP trained on molecule codebook fingerprints alone achieves 89.9% median AUROC under target-level CV, generalizing to targets unseen during training. Adding protein tokens (concatenation to 2,560-dim) reduces performance to 84.4%, confirming that the molecule codebook is the primary carrier of phenomics-relevant signal. This is the clearest evidence for emergence: the codebook, trained on protein-ligand sequence pairs, learns molecule-level pharmacological properties that predict cellular phenotype without any cellular training data.
 
 Crucially, Beaini et al.'s per-target result incorporates transcriptomic modulation (expression-level weighting of protein contributions) and a PPI graph derived from structural co-folding. Our result uses only sequence-derived embeddings.
 

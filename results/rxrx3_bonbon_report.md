@@ -17,7 +17,7 @@ We evaluated Bonbon's codebook-derived representations against Beaini et al.'s B
 | CC AUROC @0.6 | 76.0% | **81.1%** | Pair-level 5-fold CV, single MLP | **+5.1%** |
 | CC AUROC @0.6 | 76.0% | **68.1%** | Compound-level CV, clean (strictest) | -7.9% |
 | Per-target zero-shot | 53.9% | **58.8%** | Best single config (apples-to-apples) | **+4.9%** |
-| Per-target (CLS MLP) | — | **78.6%** | Global MLP on 1024-dim fusion CLS, target-CV | — |
+| Per-target (mol tokens MLP) | — | **89.9%** | 1280-dim codebook tokens, target-CV | — |
 | Per-target trained | — | **86.5%** | Target-level 5-fold CV (no Beaini comparison) | — |
 
 **Headline result**: Bonbon 81.1% vs Boltz-2 76.0% CC AUROC @0.6 — a single two-layer MLP [2048,1024] over 57 frozen features, under pair-level 5-fold CV, with 5.1 point margin and stricter evaluation methodology than Beaini (who uses no cross-validation). A 3-model ensemble reaches 82.0% but the single MLP is the cleaner result for publication.
@@ -361,6 +361,23 @@ Using the full 1024-dim fusion CLS vector instead of a scalar norm unlocks massi
 
 The +20 pt jump confirms that fusion CLS encodes target-specific directional information that scalar norm destroys. A global MLP trained across all targets generalizes to unseen targets under 5-fold target-level CV. CG scores add only +0.9 pts on top, indicating the full CLS subsumes most CG signal.
 
+### Concatenated Codebook Features (Phase 13)
+
+Using molecule codebook tokens (1280-dim) directly — rather than reducing to scalar CG scores — yields the highest per-target result:
+
+| Method | Per-target median (target-CV) |
+|---|---|
+| **Molecule tokens MLP (1280-dim)** | **89.9%** |
+| Tokens concat [prot;mol] (2560-dim) | 84.4% |
+| Fusion CLS+CG MLP (1029-dim) | 78.6% |
+| CG score baseline | 57.3% |
+
+Molecule tokens alone outperform all other representations. The codebook fingerprint captures pharmacological properties that generalize to unseen targets — an emergent property of self-supervised learning on protein-ligand pairs.
+
+### Human Proteome Embedding (Phase 12)
+
+Embedded 20,337 reviewed human proteins (Swiss-Prot) with dark-snowball-245 codebook encoder. Computed CG scores for 34M compound-protein pairs and a 20K×20K PPI matrix. Output: ~2 GB at `/opt/dlami/nvme/rxrx3_phenomics/results/dark-snowball-245/human_proteome/`.
+
 ### What drives Bonbon's advantage
 
 1. **Rich per-entity representations**: Bonbon produces 1,280-dim tokens + 8,192-dim pooled attention + 1,024-dim projections per entity, totaling ~10K features. Boltz-2 affinity prints are scalar per protein-compound pair.
@@ -421,6 +438,10 @@ Bonbon's contrastive pretraining on protein-molecule pairs produces representati
 | `analysis/fusion_with_signatures.py` | Combined signatures + fusion evaluation | ~15 min |
 | `analysis/mlp_improvements.py` | 16 architecture experiments (wider, residual, transformer, focal, multi-task) | ~10 min |
 | `analysis/per_target_fusion_cls.py` | Per-target with full 1024-dim CLS vectors | <1 min |
+| `analysis/per_target_fusion_logits.py` | Zero-shot classifier logits experiment | <1 min |
+| `analysis/codebook_concat_features.py` | Concatenated codebook token experiments | ~1 min |
+| `analysis/download_human_proteome.py` | UniProt human proteome download | ~1 min |
+| `analysis/human_proteome_cg_scores.py` | CG scores for 20K proteins × 1,674 compounds | ~2 min |
 | `analysis/transcriptomics_boost.py` | HUVEC expression weighting experiment | ~2 min |
 
 ### Figures

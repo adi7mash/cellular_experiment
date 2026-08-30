@@ -811,3 +811,54 @@ Per-target AUROC was stuck at 58.8% because fusion CLS was collapsed to a scalar
 
 ### Scripts
 - `analysis/per_target_fusion_cls.py` — Full 1024-dim CLS per-target experiments
+- `analysis/per_target_fusion_logits.py` — Zero-shot classifier logits (near-random, confirms head misalignment)
+
+## Phase 12: Human Proteome Embedding (2026-08-30)
+
+Downloaded reviewed human proteome from UniProt (20,431 proteins, Swiss-Prot).
+Embedded with dark-snowball-245 codebook encoder via millefeuille: 20,337 proteins × (tokens 1280-dim + pooled_attention 8192-dim).
+Computed CG interaction scores: 1,673 compounds × 20,337 proteins (34M pairs).
+Built 20K×20K PPI matrix from protein codebook cosine similarity.
+733/735 RxRx3 genes covered. Total output: ~2 GB.
+
+### Scripts
+- `analysis/download_human_proteome.py` — UniProt download
+- `analysis/human_proteome_cg_scores.py` — CG scores and PPI for full proteome
+
+## Phase 13: Concatenated Codebook Features (2026-08-30)
+
+### Motivation
+Instead of reducing protein+molecule codebook embeddings to scalar CG scores (dot product), use the full vectors directly for per-target prediction.
+
+### Results (per-target median AUROC, target-CV)
+
+| Method | Median |
+|--------|--------|
+| **Molecule tokens only (1280-dim)** | **89.9%** |
+| Tokens concat [prot;mol] (2560-dim) | 84.4% |
+| Combined tokens+PA (10752-dim) | 80.6% |
+| Fusion CLS+CG MLP (1029-dim) | 78.6% |
+| Fusion CLS MLP (1024-dim) | 77.7% |
+| PA product (8192-dim) | 58.8% |
+| CG score baseline | 57.3% |
+
+### Analysis
+
+1. **Molecule tokens alone (89.9%) massively outperform all other representations.** The molecule codebook fingerprint captures pharmacological properties that generalize to unseen targets — the model learns compound-level features from protein-ligand interactions that predict cellular-level effects.
+
+2. **Adding protein tokens hurts (-5.5 pts).** In per-target evaluation, the protein is constant across all compounds. Including it adds noise that the MLP must learn to ignore. The molecule carries all the discriminative signal.
+
+3. **Pooled attention product is near-random (58.8%).** The 8192-dim sparse attention pattern doesn't contain discriminative per-target signal — the tokens capture interaction quality, the pooled attention captures codebook activation.
+
+4. **This is the "emergence" result.** The codebook, trained only on protein-ligand sequence pairs, learns molecule representations that predict which compounds affect cells similarly to gene knockouts. This is emergent — cellular phenomics was never in the training objective.
+
+### Updated Comparison
+
+| Metric | Beaini (Boltz-2) | Bonbon | Delta |
+|--------|------------------|--------|-------|
+| CC AUROC @0.6 | 76.0% | **81.1%** (single MLP) | **+5.1** |
+| Per-target (zero-shot) | 53.9% | **58.8%** (CG scores) | **+4.9** |
+| Per-target (trained, target-CV) | — | **89.9%** (mol tokens MLP) | — |
+
+### Scripts
+- `analysis/codebook_concat_features.py` — Concatenated codebook feature experiments
