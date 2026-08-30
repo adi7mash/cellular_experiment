@@ -17,6 +17,7 @@ We evaluated Bonbon's codebook-derived representations against Beaini et al.'s B
 | CC AUROC @0.6 | 76.0% | **81.1%** | Pair-level 5-fold CV, single MLP | **+5.1%** |
 | CC AUROC @0.6 | 76.0% | **68.1%** | Compound-level CV, clean (strictest) | -7.9% |
 | Per-target zero-shot | 53.9% | **58.8%** | Best single config (apples-to-apples) | **+4.9%** |
+| Per-target (CLS MLP) | — | **78.6%** | Global MLP on 1024-dim fusion CLS, target-CV | — |
 | Per-target trained | — | **86.5%** | Target-level 5-fold CV (no Beaini comparison) | — |
 
 **Headline result**: Bonbon 81.1% vs Boltz-2 76.0% CC AUROC @0.6 — a single two-layer MLP [2048,1024] over 57 frozen features, under pair-level 5-fold CV, with 5.1 point margin and stricter evaluation methodology than Beaini (who uses no cross-validation). A 3-model ensemble reaches 82.0% but the single MLP is the cleaner result for publication.
@@ -347,6 +348,19 @@ Tested 16 architectural variants on the full 57-feature set to determine whether
 
 No single model reaches 82.0%. The wider MLP's +0.15 pt gain is within noise. Deeper architectures (residual blocks, transformers) consistently underperform — 57 features are too few for deep learning to exploit. The ensemble's advantage is structural diversity across learner types, not architecture quality.
 
+### Full Fusion CLS for Per-Target (Phase 11)
+
+Using the full 1024-dim fusion CLS vector instead of a scalar norm unlocks massive per-target improvement:
+
+| Method | Per-target median |
+|---|---|
+| CG score (proj_raw a=0.7) | 57.3% |
+| CLS norm (scalar) | 51.0% |
+| **Global MLP on 1024-dim CLS (target-CV)** | **77.7%** |
+| **CLS + CG combined MLP (target-CV)** | **78.6%** |
+
+The +20 pt jump confirms that fusion CLS encodes target-specific directional information that scalar norm destroys. A global MLP trained across all targets generalizes to unseen targets under 5-fold target-level CV. CG scores add only +0.9 pts on top, indicating the full CLS subsumes most CG signal.
+
 ### What drives Bonbon's advantage
 
 1. **Rich per-entity representations**: Bonbon produces 1,280-dim tokens + 8,192-dim pooled attention + 1,024-dim projections per entity, totaling ~10K features. Boltz-2 affinity prints are scalar per protein-compound pair.
@@ -406,6 +420,7 @@ Bonbon's contrastive pretraining on protein-molecule pairs produces representati
 | `analysis/fusion_cls_integration.py` | Fusion CLS feature building + evaluation | ~5 min |
 | `analysis/fusion_with_signatures.py` | Combined signatures + fusion evaluation | ~15 min |
 | `analysis/mlp_improvements.py` | 16 architecture experiments (wider, residual, transformer, focal, multi-task) | ~10 min |
+| `analysis/per_target_fusion_cls.py` | Per-target with full 1024-dim CLS vectors | <1 min |
 | `analysis/transcriptomics_boost.py` | HUVEC expression weighting experiment | ~2 min |
 
 ### Figures

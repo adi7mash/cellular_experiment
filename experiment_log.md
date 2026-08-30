@@ -776,3 +776,38 @@ The original MLP [1024,512,256,128] with ReLU+BatchNorm+30% dropout is near-opti
 
 ### Scripts
 - `analysis/mlp_improvements.py` — All 16 architecture experiments under pair-level CV
+
+## Phase 11: Full Fusion CLS for Per-Target (2026-08-30)
+
+### Motivation
+Per-target AUROC was stuck at 58.8% because fusion CLS was collapsed to a scalar norm, destroying directional information. The full 1024-dim CLS vector preserves which dimensions encode target-specific interaction patterns.
+
+### Results
+
+| Method | Per-target median | vs CG baseline |
+|--------|------------------|----------------|
+| CG score (proj_raw a=0.7) | 57.3% | baseline |
+| CLS norm (scalar) | 51.0% | -6.3 pts |
+| **Global MLP on 1024-dim CLS (target-CV)** | **77.7%** | **+20.4 pts** |
+| **CLS + CG combined MLP (target-CV)** | **78.6%** | **+21.3 pts** |
+
+### Analysis
+
+1. **+20 pt jump from using full CLS vector.** The 1024-dim fusion CLS encodes directional information about which targets a compound interacts with. Collapsing to a scalar norm destroys this — norm captures interaction strength but not specificity.
+
+2. **Global MLP generalizes across targets.** Trained on all (compound, target) pairs, tested on held-out targets under 5-fold target-level CV. The model learns general patterns in fusion space that transfer to unseen targets.
+
+3. **CG scores add only +0.9 pts on top of CLS.** The full CLS already captures most of the CG signal — the 5 CG score features are largely redundant when the MLP has access to the full 1024-dim representation.
+
+4. **Zero-shot centroid (91.9%) is inflated** — it sees target labels. LOO variant (37.9%) collapses because most targets have only 2-3 actives; removing one destroys the centroid.
+
+### Updated Comparison
+
+| Metric | Beaini (Boltz-2) | Bonbon | Delta |
+|--------|------------------|--------|-------|
+| CC AUROC @0.6 | 76.0% | **81.1%** (single MLP) | **+5.1** |
+| Per-target (zero-shot) | 53.9% | **58.8%** (CG scores) | **+4.9** |
+| Per-target (trained, target-CV) | — | **78.6%** (CLS+CG MLP) | — |
+
+### Scripts
+- `analysis/per_target_fusion_cls.py` — Full 1024-dim CLS per-target experiments

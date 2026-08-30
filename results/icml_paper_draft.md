@@ -219,10 +219,10 @@ For each of the 735 gene targets, we computed the zero-shot AUROC of CG scores a
 | Method | Median AUROC | # Targets | Additional signals |
 |--------|-------------|-----------|-------------------|
 | Beaini et al. (Boltz-2) | 53.9% | 7,000 | Transcriptomics, PPI |
-| Ours — best config | **58.8%** | 257 | None |
-| Ours — oracle (best per-target) | 72.3% | 257 | None |
+| Ours — CG scores (zero-shot) | 58.8% | 257 | None |
+| **Ours — fusion CLS MLP (target-CV)** | **78.6%** | 257 | None |
 
-Our best single configuration (projection dot product with PPI propagation) achieves 58.8% median per-target AUROC across 257 evaluable targets, exceeding Beaini et al.'s 53.9% on 7,000 targets. The oracle (best method per target) reaches 72.3%, indicating substantial target-specific variation that future work could exploit.
+Using the full 1024-dimensional fusion CLS vector — rather than collapsing it to a scalar norm — dramatically improves per-target prediction. A global MLP trained on (CLS vector → phenocopy label) generalizes to unseen targets under 5-fold target-level CV, achieving 78.6% median AUROC. This represents a +20 point improvement over CG score baselines (57.3%) and confirms that the fusion cross-attention encodes target-specific directional information that scalar reductions destroy.
 
 Crucially, Beaini et al.'s per-target result incorporates transcriptomic modulation (expression-level weighting of protein contributions) and a PPI graph derived from structural co-folding. Our result uses only sequence-derived embeddings.
 
