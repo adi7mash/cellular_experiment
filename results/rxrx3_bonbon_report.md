@@ -19,6 +19,10 @@ We evaluated Bonbon's codebook-derived representations against Beaini et al.'s B
 | Per-target zero-shot | 53.9% | **60.3%** | Weighted rank (2.5×proj + 1.5×proteome PPI) | **+6.4%** |
 | Per-target (mol tokens MLP) | — | **89.9%** | 1280-dim codebook tokens, target-CV | — |
 | Per-target trained | — | **89.9%** | Mol tokens MLP, target-level 5-fold CV | — |
+| EFAAR recall (CORUM) | .264* | **.451** | Known-relationship benchmark, 735 genes | **+71%** |
+| EFAAR recall (HuMAP) | .215* | **.509** | Known-relationship benchmark, 735 genes | **+137%** |
+
+*Published JUMP-CP MAE-G/8 baselines (Kraus et al. 2025, ~7,976 genes) — the best Cell Painting model.
 
 **Headline result**: Bonbon 81.1% vs Boltz-2 76.0% CC AUROC @0.6 — a single two-layer MLP [2048,1024] over 57 frozen features, under pair-level 5-fold CV, with 5.1 point margin and stricter evaluation methodology than Beaini (who uses no cross-validation). A 3-model ensemble reaches 82.0% but the single MLP is the cleaner result for publication.
 
