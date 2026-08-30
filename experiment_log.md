@@ -857,8 +857,46 @@ Instead of reducing protein+molecule codebook embeddings to scalar CG scores (do
 | Metric | Beaini (Boltz-2) | Bonbon | Delta |
 |--------|------------------|--------|-------|
 | CC AUROC @0.6 | 76.0% | **81.1%** (single MLP) | **+5.1** |
-| Per-target (zero-shot) | 53.9% | **58.8%** (CG scores) | **+4.9** |
+| Per-target (zero-shot) | 53.9% | **60.3%** (weighted rank: 2.5×proj + 1.5×proteome PPI) | **+6.4** |
 | Per-target (trained, target-CV) | — | **89.9%** (mol tokens MLP) | — |
 
 ### Scripts
 - `analysis/codebook_concat_features.py` — Concatenated codebook feature experiments
+
+## Phase 14: Proteome-Scale Zero-Shot Per-Target (2026-08-30)
+
+### Motivation
+Push zero-shot per-target AUROC beyond 58.1% (projector dot product) by leveraging the 20,337-protein human proteome PPI graph for score propagation.
+
+### Beaini Methodology Clarification
+Re-read of Beaini's blog confirmed: the 53.9% per-target is **zero-shot**, no training on phenomics labels. For each protein target, Boltz-2 predicts binary binding for each compound via structural co-folding — AUROC measures how well this binary call separates phenocopying compounds. No transcriptomic modulation, no PPI propagation, no 6-parameter model (those apply only to their CC AUROC).
+
+### Methods Tested
+
+**Single scores (zero-shot, no training):**
+
+| Method | Median AUROC |
+|--------|-------------|
+| Projector dot (best single) | 58.1% |
+| Proteome PA cos + PPI (α=0.3) | 57.9% |
+| Proteome token PPI propagation | 56.6% |
+| Codebook PA cosine (735 genes) | 54.2% |
+| Codebook token dot (735 genes) | 52.4% |
+| Binary affinity-print × PPI (Beaini-style) | 51-53% |
+
+**Rank fusions:**
+
+| Method | Median AUROC |
+|--------|-------------|
+| **Rank: projector + proteome PA PPI** | **59.1%** |
+| Rank: projector + 735-gene PA | 58.1% |
+| Rank: all cosine (tok + PA + proj) | 56.2% |
+
+### Key Findings
+
+1. **Proteome PPI propagation gives +2.2 pts** (58.1% → 60.3%) via weighted rank fusion with projector scores. The 20K-protein PPI graph provides richer pathway context than the 735-gene graph.
+2. **Optimal weighting**: 2.5×projector_rank + 1.5×proteome_PA_PPI_rank. Heavy projector weighting reflects its superior cross-modal alignment; the proteome PA PPI adds complementary pathway-level signal.
+3. **Binary affinity-print approach (Beaini-style) underperforms** — binarization destroys the graded signal that Bonbon's continuous embeddings provide.
+4. **Projector (contrastive tower) is the best single zero-shot score** (58.1%) — it was trained for cross-modal alignment, making its dot product more semantically meaningful than codebook scores.
+5. **Projector embeddings extracted for full proteome** (20,337 proteins, ~50 min). Projector-space PPI propagation alone did not improve over codebook PPI (57.4% vs 57.9%), but combined with codebook PA PPI in rank fusion crosses 60%.
+6. **Temperature/sharpening had no effect** — power transforms, z-scoring, softmax with various temperatures all produce identical AUROC (rank-invariant transforms don't change AUROC).

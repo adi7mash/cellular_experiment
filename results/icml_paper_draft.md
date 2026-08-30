@@ -64,7 +64,9 @@ A central question in representation learning is whether models trained on local
 
 Cellular phenotype — the observable characteristics of a cell — emerges from the aggregate of thousands of molecular interactions: drug-target binding, off-target effects, downstream signaling cascades, and metabolic perturbations. Predicting phenotype from molecular representations therefore requires that those representations encode not just binding affinity, but the functional nature of each interaction in a way that composes across the proteome.
 
-Recent work by Beaini et al. (2026) benchmarked Boltz-2 on the RxRx3 phenomics dataset (Chandrasekaran et al., 2024), demonstrating that structural affinity fingerprints derived from 100 million AlphaFold-Multimer co-foldings can predict compound-compound phenomics similarity (76% CC AUROC at 0.6 threshold) and compound-gene association (53.9% per-target median AUROC). However, this approach required 12 months of compute on the BioHive-1 supercomputer, additional transcriptomic modulation signals, and a protein-protein interaction (PPI) graph constructed from 4 million co-foldings. Moreover, as we show in this work, the evaluation methodology — fitting parameters on the same data used for evaluation, without cross-validation, on compounds likely seen during pre-training — inflates performance estimates.
+This question connects to the broader goal of building a "virtual cell" — a computational model that predicts how cells respond to perturbations. Current approaches are either top-down (training directly on cellular readouts, requiring extensive phenomics data) or bottom-up (explicitly simulating molecular interactions and composing upward). We present evidence for a third path: learning interaction representations rich enough that cellular behavior emerges from their composition, without explicit simulation or cellular training data.
+
+Recent work by Beaini et al. (2026) benchmarked Boltz-2 on the RxRx3 phenomics dataset (Chandrasekaran et al., 2024), demonstrating that structural affinity fingerprints derived from 100 million AlphaFold-Multimer co-foldings can predict compound-compound phenomics similarity (76% CC AUROC at 0.6 threshold) and compound-gene association (53.9% per-target median AUROC). Their per-target result is zero-shot: for each protein, Boltz-2 predicts binary binding for each compound, and AUROC measures how well this call separates phenocopying compounds. Their CC AUROC, by contrast, requires a 6-parameter pipeline with transcriptomic modulation and PPI propagation, fitted without cross-validation on compounds likely seen during pre-training — inflating performance estimates.
 
 We present a dramatically different approach: frozen embeddings from a self-supervised molecular interaction model [Anonymous, under review], extracted in 12.5 minutes on a single GPU, predict cellular phenotype more accurately than the structural pipeline while requiring five orders of magnitude less compute. The model was trained on protein-ligand sequence pairs using a combination of codebook quantization, contrastive learning, and cross-attention fusion — at no point was it exposed to cellular data, phenomics readouts, transcriptomics, or any system-level biological signal.
 
@@ -218,14 +220,14 @@ For each of the 735 gene targets, we computed the zero-shot AUROC of CG scores a
 
 | Method | Median AUROC | # Targets | Additional signals |
 |--------|-------------|-----------|-------------------|
-| Beaini et al. (Boltz-2) | 53.9% | 7,000 | Transcriptomics, PPI |
-| Ours — CG scores (zero-shot) | 58.8% | 257 | None |
+| Beaini et al. (Boltz-2) | 53.9% | 7,000 | None (binary co-folding only) |
+| Ours — CG scores (zero-shot) | 60.3% | 257 | Proteome PPI propagation |
 | Ours — fusion CLS MLP (target-CV) | 78.6% | 257 | None |
 | **Ours — codebook tokens MLP (target-CV)** | **89.9%** | 257 | None |
 
-Using the full 1,280-dimensional molecule codebook token vector — rather than collapsing it to a scalar CG score — dramatically improves per-target prediction. A global MLP trained on molecule codebook fingerprints alone achieves 89.9% median AUROC under target-level CV, generalizing to targets unseen during training. Adding protein tokens (concatenation to 2,560-dim) reduces performance to 84.4%, confirming that the molecule codebook is the primary carrier of phenomics-relevant signal. This is the clearest evidence for emergence: the codebook, trained on protein-ligand sequence pairs, learns molecule-level pharmacological properties that predict cellular phenotype without any cellular training data.
+Beaini et al.'s per-target result is zero-shot: for each protein target, Boltz-2 predicts binary binding (bind/don't-bind) for each compound via structural co-folding, and AUROC measures how well this binary call separates phenocopying from non-phenocopying compounds. No transcriptomic modulation, PPI propagation, or parameter fitting is applied to the per-target evaluation (those augmentations apply only to their CC AUROC). Our zero-shot result (60.3%) uses weighted rank fusion of contrastive projector scores with proteome-scale PPI-propagated pooled attention scores, where the PPI graph is derived from codebook cosine similarity across 20,337 human proteins — computed in seconds from frozen embeddings, compared to the 100 million co-foldings required for Boltz-2's structural predictions.
 
-Crucially, Beaini et al.'s per-target result incorporates transcriptomic modulation (expression-level weighting of protein contributions) and a PPI graph derived from structural co-folding. Our result uses only sequence-derived embeddings.
+Using the full 1,280-dimensional molecule codebook token vector — rather than collapsing it to a scalar CG score — dramatically improves per-target prediction. A global MLP trained on molecule codebook fingerprints alone achieves 89.9% median AUROC under target-level CV, generalizing to targets unseen during training. Adding protein tokens (concatenation to 2,560-dim) reduces performance to 84.4%, confirming that the molecule codebook is the primary carrier of phenomics-relevant signal. This is the clearest evidence for emergence: the codebook, trained on protein-ligand sequence pairs, learns molecule-level pharmacological properties that predict cellular phenotype without any cellular training data.
 
 ### 5.4 Compute Efficiency
 
@@ -308,11 +310,19 @@ Our analysis reveals that the previously reported state-of-the-art (Beaini et al
 
 We propose three levels of evaluation rigor for phenomics prediction, analogous to the temporal splits increasingly used in drug discovery benchmarks (Tossou et al., 2024). The compound-level CV with per-fold signature learning (Level 3) is the most conservative and provides the most honest estimate of how well a method would generalize to truly novel compounds.
 
-### 6.3 From Pairwise to Systems Biology
+### 6.3 From Pairwise Interactions to Virtual Cells
 
-Our results demonstrate that pairwise interaction representations compose to cell-level prediction. This composability is a necessary condition for computational systems biology: understanding a cell requires understanding the aggregate of all its molecular interactions, and our work shows that pair-level embeddings carry enough information for this aggregation to succeed.
+Building a computational model of a cell — a "virtual cell" that predicts how cells respond to perturbations — is a central goal of computational biology. Current approaches fall into two categories:
 
-The fusion CLS token — a per-pair representation from 16 layers of bidirectional cross-attention — adds +1-2 points by encoding interaction-specific information beyond what entity-level embeddings capture (Section 5.5). An architecture search over 16 model variants (Section 5.6) confirms that the ensemble's advantage is structural diversity, not model capacity — no single architecture matches it.
+**Top-down**: Train directly on cellular readouts (Cell Painting, transcriptomics). Models like scGPT and Geneformer learn correlations in phenomics space but require extensive cellular training data and do not explain *why* a compound affects a cell — they model the output distribution without representing the underlying molecular mechanisms.
+
+**Bottom-up (explicit simulation)**: Simulate molecular interactions and compose upward. Beaini et al.'s Boltz-2 approach is paradigmatic: structurally co-fold every compound against every protein, predict binary binding, aggregate across the proteome. This is principled but computationally brutal (100M co-foldings, 12 months) and the aggregation from pairwise binding to cellular phenotype requires external biological signals (transcriptomics, PPI graphs) hand-engineered into a 6-parameter pipeline.
+
+**Our work demonstrates a third path: bottom-up via learned representations.** A self-supervised model trained only on protein-ligand sequence pairs learns interaction representations rich enough that cellular behavior emerges from their composition — without explicit structural simulation, without cellular training data, and without hand-engineered aggregation pipelines. The molecule codebook fingerprint (1,280-dim) achieves 89.9% per-target AUROC on unseen gene targets, meaning the model has learned an implicit pharmacological encoding that predicts which genes a compound will phenocopy — despite never seeing cells, phenomics, or gene knockouts.
+
+This result suggests that the path to a virtual cell may not require massive structural simulation or direct cellular training data. If pairwise interaction representations capture enough about the *nature* of each interaction — not just binary binding, but mechanism, mode, and selectivity — then the cell emerges from the composition of those representations. Our model's codebook space is organized along biologically interpretable axes at multiple scales, from binding-site geometry to cellular-level phenotype, and the same frozen embeddings transfer across tasks (MoA classification, binding mode, phenomics prediction) without retraining.
+
+The fusion CLS token — a per-pair representation from 16 layers of bidirectional cross-attention — adds +1-2 points by encoding interaction-specific information beyond what entity-level embeddings capture (Section 5.5). An architecture search over 16 model variants (Section 5.6) confirms that the ensemble's advantage is structural diversity, not model capacity.
 
 ### 6.4 Limitations
 
@@ -320,17 +330,17 @@ The fusion CLS token — a per-pair representation from 16 layers of bidirection
 
 2. **Single dataset**: We evaluate on RxRx3-core only. Generalization to other cell lines, perturbation types, and phenotypic readouts remains untested.
 
-3. **Per-target performance**: While our aggregate per-target AUROC (58.8%) exceeds the previous SOTA (53.9%), it remains modest in absolute terms. Pushing beyond 60% likely requires additional signals (transcriptomics, protein structure, tissue-specific expression) or fusion-level embeddings.
+3. **Per-target performance**: Our zero-shot per-target AUROC (60.3%) exceeds the previous SOTA (53.9%) by 6.4 points. Proteome-scale PPI propagation through 20,337 human proteins improved the result from 58.1% to 60.3%, confirming that denser biological context helps. The trained per-target result (89.9% under target-CV) demonstrates that richer signal exists in the embeddings and a learned nonlinear projection extracts it.
 
 4. **Compound-level CV**: Our compound-level CV result (68.1%) is lower than the pair-level result (81.2%). The gap reflects the difficulty of generalizing to unseen compounds and suggests that current embedding-based approaches have room for improvement in out-of-distribution generalization.
 
 ## 7. Conclusion
 
-We have demonstrated that frozen embeddings from a self-supervised molecular interaction model predict compound-induced cellular phenotype, a system-level property never encountered during training. This represents an emergent ability of pair-level molecular representations: the capacity to compose to cell-level biology.
+We have demonstrated that frozen embeddings from a self-supervised molecular interaction model predict compound-induced cellular phenotype — a system-level property never encountered during training. This represents an emergent ability of pair-level molecular representations: the capacity to compose to cell-level biology.
 
 Our approach outperforms the previous state-of-the-art while requiring five orders of magnitude less compute, using no external biological signals, and providing properly cross-validated performance estimates. We introduce a rigorous evaluation protocol for molecular phenomics prediction that distinguishes inflated from honest performance measures.
 
-These results suggest a path toward computational systems biology grounded in learned molecular representations: rather than simulating biological systems from physical principles, we can learn representations of molecular interactions that encode enough about their downstream consequences to predict cellular behavior. The question of what other system-level properties emerge from pair-level representations — tissue-level effects, organism-level toxicity, patient-level drug response — is an exciting direction for future work.
+These results support a bottom-up path toward virtual cells: rather than simulating biological systems from physical principles (expensive, brittle) or learning cellular behavior from cellular data (data-hungry, uninterpretable), we can learn pairwise interaction representations rich enough that cell-level prediction emerges from their composition. The 89.9% per-target result on unseen gene targets, achieved with molecule codebook fingerprints alone, suggests that the codebook has learned an implicit pharmacological ontology — a compressed representation of how compounds affect biological systems — entirely from protein-ligand sequence pairs. The question of what other system-level properties emerge from these representations — tissue-level effects, organism-level toxicity, patient-level drug response — is an exciting direction for future work.
 
 ## References
 

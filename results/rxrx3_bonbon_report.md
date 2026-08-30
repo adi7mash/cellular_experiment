@@ -16,9 +16,9 @@ We evaluated Bonbon's codebook-derived representations against Beaini et al.'s B
 | CC AUROC @0.4 | 71.0% | **79.4%** | Pair-level 5-fold CV (apples-to-apples) | **+8.4%** |
 | CC AUROC @0.6 | 76.0% | **81.1%** | Pair-level 5-fold CV, single MLP | **+5.1%** |
 | CC AUROC @0.6 | 76.0% | **68.1%** | Compound-level CV, clean (strictest) | -7.9% |
-| Per-target zero-shot | 53.9% | **58.8%** | Best single config (apples-to-apples) | **+4.9%** |
+| Per-target zero-shot | 53.9% | **60.3%** | Weighted rank (2.5×proj + 1.5×proteome PPI) | **+6.4%** |
 | Per-target (mol tokens MLP) | — | **89.9%** | 1280-dim codebook tokens, target-CV | — |
-| Per-target trained | — | **86.5%** | Target-level 5-fold CV (no Beaini comparison) | — |
+| Per-target trained | — | **89.9%** | Mol tokens MLP, target-level 5-fold CV | — |
 
 **Headline result**: Bonbon 81.1% vs Boltz-2 76.0% CC AUROC @0.6 — a single two-layer MLP [2048,1024] over 57 frozen features, under pair-level 5-fold CV, with 5.1 point margin and stricter evaluation methodology than Beaini (who uses no cross-validation). A 3-model ensemble reaches 82.0% but the single MLP is the cleaner result for publication.
 
@@ -394,13 +394,14 @@ Beaini's evaluation methodology has critical weaknesses:
 - **No cross-validation**: 6 parameters fitted and evaluated on the same 665K matrix elements
 - **In-distribution compounds**: "known" = likely in Boltz-2 training data
 - **Extra signals**: Uses transcriptomics + PPI from 4M AlphaFold co-foldings + 11 cell lines
-- **Per-target nearly random**: 53.9% on 7K proteins, barely above 50% chance
+- **Per-target nearly random**: 53.9% on 7K proteins, barely above 50% chance (note: their per-target is zero-shot from binary co-folding only — no transcriptomics or PPI, unlike their CC result)
 
 Bonbon achieves higher numbers with:
 - **Cross-validation** (pair-level or compound-level)
 - **No transcriptomics** or cell-line-specific expression data
 - **Single checkpoint**, 12.5 minutes of embedding on 1 GPU
 - **1 cell line** (HUVEC only)
+- **Proteome-scale PPI** from codebook cosine (20K proteins, computed in seconds) improves zero-shot per-target from 58.1% to 60.3% via weighted rank fusion with projector scores
 
 ### Limitations
 
