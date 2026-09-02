@@ -3,3 +3,10 @@
 __pycache__/
 *.pyc
 /opt/
+*.gctx
+*.gctx.gz
+*.pt
+*.ckpt
+*.h5
+string_ppi.txt.gz
+string_info.txt.gz

@@ -537,8 +537,11 @@ def per_target_experiment(gt, gt_c, gt_g, n_c, n_g, cg_scores, ppi,
     p(f"  {len(configs)} configs")
     results = {}
 
-    for n_sel, subset_name in [(150, "known_150"), (246, "known_246")]:
-        known_idx = select_known(cg_scores, n_sel)
+    for n_sel, subset_name in [(n_c, "all_1674"), (150, "known_150")]:
+        if n_sel == n_c:
+            eval_idx = np.arange(n_c)
+        else:
+            eval_idx = select_known(cg_scores, n_sel)
         p(f"\n  --- {subset_name} ({n_sel} compounds) ---")
 
         per_target_aucs = np.full((n_g, len(configs)), np.nan)
@@ -547,11 +550,11 @@ def per_target_experiment(gt, gt_c, gt_g, n_c, n_g, cg_scores, ppi,
             mat = cg_scores[key]
             if alpha > 0:
                 mat = propagate_ppi(mat, ppi, alpha, thresh)
-            scores_sub = mat[known_idx]
+            scores_sub = mat[eval_idx]
 
             for g in range(n_g):
-                y = cg_binary[known_idx, g]
-                if y.sum() < 2 or y.sum() > len(y) - 2:
+                y = cg_binary[eval_idx, g]
+                if y.sum() < 1 or y.sum() >= len(y):
                     continue
                 try:
                     per_target_aucs[g, ci] = roc_auc_score(y, scores_sub[:, g])
@@ -689,7 +692,8 @@ def main():
      mol_tok, mol_pa, mol_proj, prot_tok, prot_pa, prot_proj) = load_data()
 
     known_idx = select_known(cg_scores, 150)
-    p(f"\nSelected 150 known compounds")
+    p(f"\nCC AUROC evaluation: 150 known compounds (highest CG signal range)")
+    p(f"Per-target zero-shot: all {n_c} compounds, {n_g} targets")
 
     cc_sim = gt["cc_similarity"]
     all_results = {}
