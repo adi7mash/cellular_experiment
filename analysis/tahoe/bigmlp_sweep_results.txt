@@ -1,0 +1,197 @@
+Data: 2847 conditions, 2000 HVGs, 945 CG dims
+Device: cuda
+
+==============================================================================================================
+MODERNBERT + BIG MLP SWEEP
+==============================================================================================================
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRAINING FRACTION: 5%
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Ridge baselines:
+  Ridge(α=0.5)                                                 | n= 113 | Pearson Δ: 0.2926 | DEG-50: 0.3045 | 0.0s
+  Ridge(α=1.0)                                                 | n= 113 | Pearson Δ: 0.2982 | DEG-50: 0.3105 | 0.0s
+  Ridge(α=5.0)                                                 | n= 113 | Pearson Δ: 0.3169 | DEG-50: 0.3302 | 0.0s
+
+  Big MLPs:
+  MLP[2048] dp=0.4                                             | n= 113 | Pearson Δ: 0.3566 | DEG-50: 0.3699 | 5.2s
+  MLP[4096] dp=0.5                                             | n= 113 | Pearson Δ: 0.3547 | DEG-50: 0.3677 | 4.9s
+  MLP[2048,1024] dp=0.4                                        | n= 113 | Pearson Δ: 0.3831 | DEG-50: 0.3948 | 5.4s
+  MLP[4096,2048] dp=0.5                                        | n= 113 | Pearson Δ: 0.3816 | DEG-50: 0.3939 | 5.6s
+  MLP[2048,1024,512] dp=0.5                                    | n= 113 | Pearson Δ: 0.3943 | DEG-50: 0.4047 | 7.2s
+  MLP[4096,2048,1024] dp=0.5                                   | n= 113 | Pearson Δ: 0.4074 | DEG-50: 0.4182 | 7.4s
+  MLP[2048,1024] SiLU dp=0.4                                   | n= 113 | Pearson Δ: 0.3711 | DEG-50: 0.3827 | 5.4s
+  MLP[4096,2048] SiLU dp=0.5                                   | n= 113 | Pearson Δ: 0.3696 | DEG-50: 0.3811 | 5.6s
+  MLP+CL[2048,1024] dp=0.4                                     | n= 113 | Pearson Δ: 0.3974 | DEG-50: 0.4079 | 5.2s
+  MLP+CL[4096,2048] dp=0.5                                     | n= 113 | Pearson Δ: 0.3965 | DEG-50: 0.4077 | 5.5s
+
+  ModernBERT:
+You are attempting to use Flash Attention 2 without specifying a torch dtype. This might lead to unexpected behaviour
+  ModernBERT-tiny(h=128,L=2)                                   | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-small(h=256,L=4)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-med(h=384,L=6)                                    | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-large(h=512,L=6)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-xl(h=768,L=8)                                     | ERROR: Padding_idx must be within num_embeddings
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRAINING FRACTION: 10%
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Ridge baselines:
+  Ridge(α=0.5)                                                 | n= 227 | Pearson Δ: 0.4084 | DEG-50: 0.4235 | 0.0s
+  Ridge(α=1.0)                                                 | n= 227 | Pearson Δ: 0.4088 | DEG-50: 0.4241 | 0.0s
+  Ridge(α=5.0)                                                 | n= 227 | Pearson Δ: 0.4152 | DEG-50: 0.4310 | 0.0s
+
+  Big MLPs:
+  MLP[2048] dp=0.4                                             | n= 227 | Pearson Δ: 0.4697 | DEG-50: 0.4850 | 4.7s
+  MLP[4096] dp=0.5                                             | n= 227 | Pearson Δ: 0.4675 | DEG-50: 0.4836 | 5.0s
+  MLP[2048,1024] dp=0.4                                        | n= 227 | Pearson Δ: 0.4860 | DEG-50: 0.4994 | 5.5s
+  MLP[4096,2048] dp=0.5                                        | n= 227 | Pearson Δ: 0.4847 | DEG-50: 0.4981 | 5.6s
+  MLP[2048,1024,512] dp=0.5                                    | n= 227 | Pearson Δ: 0.4917 | DEG-50: 0.5034 | 7.2s
+  MLP[4096,2048,1024] dp=0.5                                   | n= 227 | Pearson Δ: 0.4929 | DEG-50: 0.5048 | 7.4s
+  MLP[2048,1024] SiLU dp=0.4                                   | n= 227 | Pearson Δ: 0.4806 | DEG-50: 0.4939 | 5.3s
+  MLP[4096,2048] SiLU dp=0.5                                   | n= 227 | Pearson Δ: 0.4770 | DEG-50: 0.4904 | 5.7s
+  MLP+CL[2048,1024] dp=0.4                                     | n= 227 | Pearson Δ: 0.5083 | DEG-50: 0.5187 | 5.3s
+  MLP+CL[4096,2048] dp=0.5                                     | n= 227 | Pearson Δ: 0.5090 | DEG-50: 0.5197 | 5.5s
+
+  ModernBERT:
+  ModernBERT-tiny(h=128,L=2)                                   | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-small(h=256,L=4)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-med(h=384,L=6)                                    | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-large(h=512,L=6)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-xl(h=768,L=8)                                     | ERROR: Padding_idx must be within num_embeddings
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRAINING FRACTION: 20%
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Ridge baselines:
+  Ridge(α=0.5)                                                 | n= 455 | Pearson Δ: 0.5988 | DEG-50: 0.6191 | 0.0s
+  Ridge(α=1.0)                                                 | n= 455 | Pearson Δ: 0.5955 | DEG-50: 0.6157 | 0.0s
+  Ridge(α=5.0)                                                 | n= 455 | Pearson Δ: 0.5769 | DEG-50: 0.5971 | 0.0s
+
+  Big MLPs:
+  MLP[2048] dp=0.4                                             | n= 455 | Pearson Δ: 0.6364 | DEG-50: 0.6554 | 8.6s
+  MLP[4096] dp=0.5                                             | n= 455 | Pearson Δ: 0.6339 | DEG-50: 0.6530 | 9.7s
+  MLP[2048,1024] dp=0.4                                        | n= 455 | Pearson Δ: 0.6429 | DEG-50: 0.6610 | 9.7s
+  MLP[4096,2048] dp=0.5                                        | n= 455 | Pearson Δ: 0.6418 | DEG-50: 0.6602 | 11.2s
+  MLP[2048,1024,512] dp=0.5                                    | n= 455 | Pearson Δ: 0.6443 | DEG-50: 0.6588 | 13.4s
+  MLP[4096,2048,1024] dp=0.5                                   | n= 455 | Pearson Δ: 0.6437 | DEG-50: 0.6598 | 15.4s
+  MLP[2048,1024] SiLU dp=0.4                                   | n= 455 | Pearson Δ: 0.6397 | DEG-50: 0.6577 | 9.8s
+  MLP[4096,2048] SiLU dp=0.5                                   | n= 455 | Pearson Δ: 0.6379 | DEG-50: 0.6559 | 11.3s
+  MLP+CL[2048,1024] dp=0.4                                     | n= 455 | Pearson Δ: 0.6740 | DEG-50: 0.6871 | 9.7s
+  MLP+CL[4096,2048] dp=0.5                                     | n= 455 | Pearson Δ: 0.6747 | DEG-50: 0.6879 | 11.3s
+
+  ModernBERT:
+  ModernBERT-tiny(h=128,L=2)                                   | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-small(h=256,L=4)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-med(h=384,L=6)                                    | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-large(h=512,L=6)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-xl(h=768,L=8)                                     | ERROR: Padding_idx must be within num_embeddings
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRAINING FRACTION: 50%
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Ridge baselines:
+  Ridge(α=0.5)                                                 | n=1139 | Pearson Δ: 0.8102 | DEG-50: 0.8327 | 0.0s
+  Ridge(α=1.0)                                                 | n=1139 | Pearson Δ: 0.7977 | DEG-50: 0.8196 | 0.0s
+  Ridge(α=5.0)                                                 | n=1139 | Pearson Δ: 0.7491 | DEG-50: 0.7697 | 0.0s
+
+  Big MLPs:
+  MLP[2048] dp=0.4                                             | n=1139 | Pearson Δ: 0.8227 | DEG-50: 0.8412 | 18.8s
+  MLP[4096] dp=0.5                                             | n=1139 | Pearson Δ: 0.8214 | DEG-50: 0.8402 | 21.3s
+  MLP[2048,1024] dp=0.4                                        | n=1139 | Pearson Δ: 0.8294 | DEG-50: 0.8474 | 21.3s
+  MLP[4096,2048] dp=0.5                                        | n=1139 | Pearson Δ: 0.8287 | DEG-50: 0.8471 | 24.9s
+  MLP[2048,1024,512] dp=0.5                                    | n=1139 | Pearson Δ: 0.8285 | DEG-50: 0.8445 | 32.5s
+  MLP[4096,2048,1024] dp=0.5                                   | n=1139 | Pearson Δ: 0.8302 | DEG-50: 0.8470 | 35.3s
+  MLP[2048,1024] SiLU dp=0.4                                   | n=1139 | Pearson Δ: 0.8293 | DEG-50: 0.8472 | 21.1s
+  MLP[4096,2048] SiLU dp=0.5                                   | n=1139 | Pearson Δ: 0.8286 | DEG-50: 0.8469 | 25.6s
+  MLP+CL[2048,1024] dp=0.4                                     | n=1139 | Pearson Δ: 0.8582 | DEG-50: 0.8709 | 21.3s
+  MLP+CL[4096,2048] dp=0.5                                     | n=1139 | Pearson Δ: 0.8576 | DEG-50: 0.8701 | 29.1s
+
+  ModernBERT:
+  ModernBERT-tiny(h=128,L=2)                                   | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-small(h=256,L=4)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-med(h=384,L=6)                                    | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-large(h=512,L=6)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-xl(h=768,L=8)                                     | ERROR: Padding_idx must be within num_embeddings
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  TRAINING FRACTION: 100%
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Ridge baselines:
+  Ridge(α=0.5)                                                 | n=2278 | Pearson Δ: 0.8566 | DEG-50: 0.8750 | 0.0s
+  Ridge(α=1.0)                                                 | n=2278 | Pearson Δ: 0.8494 | DEG-50: 0.8679 | 0.0s
+  Ridge(α=5.0)                                                 | n=2278 | Pearson Δ: 0.8148 | DEG-50: 0.8326 | 0.0s
+
+  Big MLPs:
+  MLP[2048] dp=0.4                                             | n=2278 | Pearson Δ: 0.8645 | DEG-50: 0.8808 | 33.3s
+  MLP[4096] dp=0.5                                             | n=2278 | Pearson Δ: 0.8637 | DEG-50: 0.8801 | 36.6s
+  MLP[2048,1024] dp=0.4                                        | n=2278 | Pearson Δ: 0.8667 | DEG-50: 0.8824 | 45.7s
+  MLP[4096,2048] dp=0.5                                        | n=2278 | Pearson Δ: 0.8662 | DEG-50: 0.8821 | 51.8s
+  MLP[2048,1024,512] dp=0.5                                    | n=2278 | Pearson Δ: 0.8661 | DEG-50: 0.8816 | 70.5s
+  MLP[4096,2048,1024] dp=0.5                                   | n=2278 | Pearson Δ: 0.8669 | DEG-50: 0.8820 | 77.0s
+  MLP[2048,1024] SiLU dp=0.4                                   | n=2278 | Pearson Δ: 0.8666 | DEG-50: 0.8824 | 47.2s
+  MLP[4096,2048] SiLU dp=0.5                                   | n=2278 | Pearson Δ: 0.8662 | DEG-50: 0.8821 | 53.6s
+  MLP+CL[2048,1024] dp=0.4                                     | n=2278 | Pearson Δ: 0.9219 | DEG-50: 0.9313 | 46.7s
+  MLP+CL[4096,2048] dp=0.5                                     | n=2278 | Pearson Δ: 0.9203 | DEG-50: 0.9293 | 53.8s
+
+  ModernBERT:
+  ModernBERT-tiny(h=128,L=2)                                   | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-small(h=256,L=4)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-med(h=384,L=6)                                    | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-large(h=512,L=6)                                  | ERROR: Padding_idx must be within num_embeddings
+  ModernBERT-xl(h=768,L=8)                                     | ERROR: Padding_idx must be within num_embeddings
+
+==============================================================================================================
+TOP RESULTS PER TRAINING FRACTION
+==============================================================================================================
+
+  Top 5 at 5%:
+    1. Pearson Δ=0.4074 DEG-50=0.4182 | MLP[4096,2048,1024]
+    2. Pearson Δ=0.3974 DEG-50=0.4079 | MLP+CL[2048,1024]
+    3. Pearson Δ=0.3965 DEG-50=0.4077 | MLP+CL[4096,2048]
+    4. Pearson Δ=0.3943 DEG-50=0.4047 | MLP[2048,1024,512]
+    5. Pearson Δ=0.3831 DEG-50=0.3948 | MLP[2048,1024]
+
+  Top 5 at 10%:
+    1. Pearson Δ=0.5090 DEG-50=0.5197 | MLP+CL[4096,2048]
+    2. Pearson Δ=0.5083 DEG-50=0.5187 | MLP+CL[2048,1024]
+    3. Pearson Δ=0.4929 DEG-50=0.5048 | MLP[4096,2048,1024]
+    4. Pearson Δ=0.4917 DEG-50=0.5034 | MLP[2048,1024,512]
+    5. Pearson Δ=0.4860 DEG-50=0.4994 | MLP[2048,1024]
+
+  Top 5 at 20%:
+    1. Pearson Δ=0.6747 DEG-50=0.6879 | MLP+CL[4096,2048]
+    2. Pearson Δ=0.6740 DEG-50=0.6871 | MLP+CL[2048,1024]
+    3. Pearson Δ=0.6443 DEG-50=0.6588 | MLP[2048,1024,512]
+    4. Pearson Δ=0.6437 DEG-50=0.6598 | MLP[4096,2048,1024]
+    5. Pearson Δ=0.6429 DEG-50=0.6610 | MLP[2048,1024]
+
+  Top 5 at 50%:
+    1. Pearson Δ=0.8582 DEG-50=0.8709 | MLP+CL[2048,1024]
+    2. Pearson Δ=0.8576 DEG-50=0.8701 | MLP+CL[4096,2048]
+    3. Pearson Δ=0.8302 DEG-50=0.8470 | MLP[4096,2048,1024]
+    4. Pearson Δ=0.8294 DEG-50=0.8474 | MLP[2048,1024]
+    5. Pearson Δ=0.8293 DEG-50=0.8472 | MLP[2048,1024] SiLU
+
+  Top 5 at 100%:
+    1. Pearson Δ=0.9219 DEG-50=0.9313 | MLP+CL[2048,1024]
+    2. Pearson Δ=0.9203 DEG-50=0.9293 | MLP+CL[4096,2048]
+    3. Pearson Δ=0.8669 DEG-50=0.8820 | MLP[4096,2048,1024]
+    4. Pearson Δ=0.8667 DEG-50=0.8824 | MLP[2048,1024]
+    5. Pearson Δ=0.8666 DEG-50=0.8824 | MLP[2048,1024] SiLU
+
+==============================================================================================================
+THRESHOLD ANALYSIS
+==============================================================================================================
+  Pearson Δ ≥ 0.80: 50% data | 0.8582 | MLP+CL[2048,1024]
+  Pearson Δ ≥ 0.84: 50% data | 0.8582 | MLP+CL[2048,1024]
+  Pearson Δ ≥ 0.85: 50% data | 0.8582 | MLP+CL[2048,1024]
+  Pearson Δ ≥ 0.88: 100% data | 0.9219 | MLP+CL[2048,1024]
+  Pearson Δ ≥ 0.90: 100% data | 0.9219 | MLP+CL[2048,1024]
+
+Done.
